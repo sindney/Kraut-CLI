@@ -30,7 +30,7 @@
 
 - [x] 5.1 Round-trip: load → save → load every `Data/Content/Trees/*.tree` sample; assert structural equivalence (compare re-serialized bytes) — all 20 samples pass; note: ±1 ulp float oscillation in curve samples is engine-inherent (`Curve::PasteCurve` resamples through division on every load, same in the editor)
 - [x] 5.2 Determinism: same descriptor + seed twice → byte-identical OBJ output
-- [ ] 5.3 Report a CLI-saved `.tree` to the user for manual open-check in the official GUI (agent cannot run the GUI itself) — **v1 attempt FAILED in user's Kraut Beta 3 binary (crash)**. Root cause found: Beta 3 writes/reads **file version 16 with SpawnNodeDesc v42**; the repo HEAD writes v18/v43 (v43 dropped normal-map strings → v42 reader desyncs → crash). Fixed: CLI now reads v14–v18 and always **writes v16 + SpawnNodeDesc v42** (validates to exact EOF with an independent Python parser). All 20 SDK files + 20 repo files load; v16 output regenerates the identical mesh. New file staged at `%TEMP%\Tree5_rt.tree` for re-test.
+- [x] 5.3 Report a CLI-saved `.tree` to the user for manual open-check in the official GUI (agent cannot run the GUI itself) — **v1 attempt FAILED in user's Kraut Beta 3 binary (crash)**. Root cause found: Beta 3 writes/reads **file version 16 with SpawnNodeDesc v42**; the repo HEAD writes v18/v43 (v43 dropped normal-map strings → v42 reader desyncs → crash). Fixed: CLI now reads v14–v18 and always **writes v16 + SpawnNodeDesc v42** (validates to exact EOF with an independent Python parser). All 20 SDK files + 20 repo files load; v16 output regenerates the identical mesh. **Verified by user: Beta 3 opens the CLI-saved file fine.**
 
 ## 6. Preview target (optional, `KRAUT_BUILD_PREVIEW=ON`)
 
@@ -56,4 +56,4 @@
 ## 9. Wrap-up
 
 - [x] 9.1 Short usage doc (header comment in main.cpp or README in KrautCLI folder): subcommands, flags, `--json` contract, screenshot workflow
-- [ ] 9.2 Report all changes to the user for verification — **do not commit**
+- [x] 9.2 Report all changes to the user for verification — **do not commit** (superseded: user verified and directed commit to the `sindney/Kraut-CLI` fork)
