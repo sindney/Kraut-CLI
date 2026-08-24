@@ -11,6 +11,9 @@ if (POLICY CMP0043)
   cmake_policy(SET CMP0043 NEW)
 endif()
 
+# Editor-only library (not needed by KrautCLI/KrautPreview)
+BUILD_CONDITIONAL(KRAUT_BUILD_EDITOR)
+
 # Add all the preprocessor definitions that are needed to configure this library
 # add_definitions (-DMY_PREPROCESS_DEFINITION_1)
 add_definitions (-DAE_RENDERAPI_OPENGL)

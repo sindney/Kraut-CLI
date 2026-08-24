@@ -21,6 +21,9 @@ if (POLICY CMP0043)
   cmake_policy(SET CMP0043 NEW)
 endif()
 
+# Editor-only library (not needed by KrautCLI/KrautPreview)
+BUILD_CONDITIONAL(KRAUT_BUILD_EDITOR)
+
 SET (LINK_LIBRARIES 
   KrautFoundation
   KrautGraphics

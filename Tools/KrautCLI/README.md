@@ -3,21 +3,21 @@
 Headless command line interface for Kraut tree/vegetation generation. Links only
 `KrautFoundation` + `KrautGenerator` — no Qt, no OpenGL, fully agent-controllable.
 
-Sibling tool: `Tools/KrautPreview` (optional SDL2 + Dear ImGui + OpenGL preview,
-`-DKRAUT_BUILD_PREVIEW=ON`).
+Sibling tool: `Tools/KrautPreview` (SDL2 + Dear ImGui + OpenGL preview, part of the
+default build; disable with `-DKRAUT_BUILD_PREVIEW=OFF`).
 
 ## Building
 
-The target is auto-discovered by the glob build (`Tools/*/CMakeLists.txt`):
+The default build is light and fast (KrautCLI + KrautPreview, no Qt):
 
 ```sh
-cmake -S . -B build-cli -G "Visual Studio 17 2022" -A x64 -DEZ_ENABLE_QT_SUPPORT=OFF
+cmake -S . -B build-cli -G "Visual Studio 17 2022" -A x64
 cmake --build build-cli --target KrautCLI --config Release
 # binary: Output/Bin/WinVs2017Release64/KrautCLI.exe
 ```
 
-Qt is not required for the CLI (`-DEZ_ENABLE_QT_SUPPORT=OFF` skips the editor targets;
-leave it ON if you also want to build `aeEditor`).
+Qt is not required for the default build. The full Qt-based `aeEditor` (and its
+editor-only engine libraries) is opt-in: configure with `-DKRAUT_BUILD_EDITOR=ON`.
 
 ## Commands
 
@@ -61,7 +61,7 @@ KrautCLI info Data/Content/Trees/Tree5.tree --json
 # generate + export OBJ
 KrautCLI generate Data/Content/Trees/Tree5.tree --seed 42 --lod none --out tree.obj --json
 
-# visual verification (requires -DKRAUT_BUILD_PREVIEW=ON build)
+# visual verification (KrautPreview is part of the default build)
 KrautPreview Data/Content/Trees/Tree5.tree --seed 42 --screenshot tree.png
 
 # native baked format
@@ -107,5 +107,6 @@ KrautPreview <file.tree> [--seed N] [--lod ...] --screenshot out.png [--width W]
 
 A compact SDL2+ImGui preview with a plain lambert shader (no textures). Interactive: drag to orbit,
 wheel to zoom, ImGui panel for seed/LOD/wireframe/regenerate. `--screenshot` renders offscreen to PNG
-and exits 0. Building it requires network access once (FetchContent: SDL2, Dear ImGui, GLEW, stb)
-and `-DKRAUT_BUILD_PREVIEW=ON`. For textured/official-quality images, use `aeEditor --screenshot`.
+and exits 0. It is part of the default build (disable with `-DKRAUT_BUILD_PREVIEW=OFF`); the first
+configure requires network access once (FetchContent: SDL2, Dear ImGui, GLEW, stb).
+For textured/official-quality images, use `aeEditor --screenshot`.

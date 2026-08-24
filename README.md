@@ -28,8 +28,12 @@ This fork adds an agent-controllable, headless toolchain so trees can be generat
 | Tool | Path | Purpose |
 |---|---|---|
 | **KrautCLI** | `Tools/KrautCLI` | Headless pipeline: `info` / `generate` / `export` / `roundtrip` on `.tree` files. Deterministic per `(descriptor, seed)`, JSON output for automation, exit codes 1 usage / 2 load / 3 generate / 4 export. Exports OBJ and `.kraut` v2. |
-| **KrautPreview** | `Tools/KrautPreview` | Lightweight SDL2 + ImGui + GL3.3 viewer (opt-in: `KRAUT_BUILD_PREVIEW=ON`). Orbit camera, LOD selector, wireframe, `--screenshot out.png` batch mode. Textured: diffuse textures (incl. DDS DXT1/DXT5), billboard-leaf expansion and alpha testing mirror the official renderer; normal maps / AO / color variation are editor-only. `--data DIR` adds texture search roots (the repo's `Data/` is probed automatically). |
+| **KrautPreview** | `Tools/KrautPreview` | Lightweight SDL2 + ImGui + GL3.3 viewer (part of the default build; disable with `KRAUT_BUILD_PREVIEW=OFF`). Orbit camera, LOD selector, wireframe, `--screenshot out.png` batch mode. Textured: diffuse textures (incl. DDS DXT1/DXT5), billboard-leaf expansion and alpha testing mirror the official renderer; normal maps / AO / color variation are editor-only. `--data DIR` adds texture search roots (the repo's `Data/` is probed automatically). |
 | **aeEditor --screenshot** | `Tools/aeEditor` | `aeEditor.exe --screenshot in.tree out.png [--seed N] [--width W] [--height H]` — renders with the **official** OpenGL renderer (textured, lit) via a hidden window + offscreen FBO, no GUI shown. This is the way to get presentation-quality images headlessly. |
+
+### Build options
+
+The default build is light and fast: `KrautCLI` + `KrautPreview` (+ `KrautFoundation`/`KrautGenerator`), no Qt required. The full Qt-based editor and its editor-only engine libraries (`KrautGraphics`, `KrautEditorBasics`, `KrautEditorRenderAPI_GL`, `TreePlugin`) are built on demand with `-DKRAUT_BUILD_EDITOR=ON` (requires Qt5).
 
 ### Why it was built this way
 

@@ -11,7 +11,7 @@ if (POLICY CMP0043)
   cmake_policy(SET CMP0043 NEW)
 endif()
 
-BUILD_CONDITIONAL(BUILDSYSTEM_PLATFORM_WINDOWS)
+BUILD_CONDITIONAL(BUILDSYSTEM_PLATFORM_WINDOWS AND KRAUT_BUILD_EDITOR)
 
 # Add all the preprocessor definitions that are needed to configure this library
 add_definitions (-DAE_RENDERAPI_OPENGL)

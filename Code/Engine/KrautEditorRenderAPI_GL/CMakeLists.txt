@@ -7,6 +7,9 @@
 # *** Modify this file as required ***
 #
 
+# Editor-only library (not needed by KrautCLI/KrautPreview)
+BUILD_CONDITIONAL(KRAUT_BUILD_EDITOR)
+
 # Add all the preprocessor definitions that are needed to configure this library
 # add_definitions (-DMY_PREPROCESS_DEFINITION_1)
 # add_definitions (-DMY_PREPROCESS_DEFINITION_2)

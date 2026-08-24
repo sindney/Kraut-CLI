@@ -2,11 +2,10 @@
 
 #
 # KrautPreview - SDL2 + Dear ImGui + OpenGL 3.3 preview for generated trees.
-# Opt-in only: not part of the default build. Enable with -DKRAUT_BUILD_PREVIEW=ON.
+# Part of the default (light) build. Disable with -DKRAUT_BUILD_PREVIEW=OFF.
 # Fetches SDL2, Dear ImGui and stb_image_write at configure time (requires network once).
+# The option itself is declared in the root CMakeLists.txt.
 #
-
-option(KRAUT_BUILD_PREVIEW "Build the SDL2+ImGui tree preview tool" OFF)
 
 if (NOT KRAUT_BUILD_PREVIEW)
   return ()
