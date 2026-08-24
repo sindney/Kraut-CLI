@@ -37,8 +37,11 @@ AE_ON_GLOBAL_EVENT(aeEditor_RedrawNow)
 
   static bool bRedrawing = false;
 
-  qt3DWidget* pGLWidget;
+  qt3DWidget* pGLWidget = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/3dwidget", &pGLWidget, sizeof(QGLWidget*));
+
+  if (pGLWidget == nullptr)
+    return; // headless mode (screenshot): no 3D widget registered
 
   if (bRedrawing)
   {
@@ -56,8 +59,11 @@ AE_ON_GLOBAL_EVENT(aeEditor_QueueRedraw)
   if (g_iBlockRedrawRequests > 0)
     return;
 
-  qt3DWidget* pGLWidget;
+  qt3DWidget* pGLWidget = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/3dwidget", &pGLWidget, sizeof(QGLWidget*));
+
+  if (pGLWidget == nullptr)
+    return; // headless mode (screenshot): no 3D widget registered
 
   pGLWidget->QueueRedraw();
 }
@@ -66,6 +72,9 @@ AE_ON_GLOBAL_EVENT(aeEditor_SetWindowTitle)
 {
   QMainWindow* pMainWindow = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/mainwidget", &pMainWindow, sizeof(QMainWindow*));
+
+  if (pMainWindow == nullptr)
+    return; // headless mode (screenshot): no main window registered
 
   aeString sTitle;
   sTitle.Format("%s - [ %s ]", aeEditorPlugin::s_EditorName.c_str(), param0.Text);
@@ -77,6 +86,9 @@ AE_ON_GLOBAL_EVENT(aeEditor_WorkspaceModified)
 {
   QMainWindow* pMainWindow = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/mainwidget", &pMainWindow, sizeof(QMainWindow*));
+
+  if (pMainWindow == nullptr)
+    return; // headless mode (screenshot): no main window registered
 
   aeString sTitle = pMainWindow->windowTitle().toUtf8().data();
 
@@ -91,6 +103,9 @@ AE_ON_GLOBAL_EVENT(aeEditor_WorkspaceUnmodified)
 {
   QMainWindow* pMainWindow = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/mainwidget", &pMainWindow, sizeof(QMainWindow*));
+
+  if (pMainWindow == nullptr)
+    return; // headless mode (screenshot): no main window registered
 
   aeString sTitle = pMainWindow->windowTitle().toUtf8().data();
 

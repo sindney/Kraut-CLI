@@ -37,3 +37,6 @@ Data/aeEditor/Console.cfg
 Data/aeEditor/CVars.cfg
 Data/aeEditor/Layout.qt
 *.pdb
+
+# CLI build dirs
+build-*/

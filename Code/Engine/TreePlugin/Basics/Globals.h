@@ -8,7 +8,7 @@
 using namespace AE_NS_EDITORBASICS;
 using namespace AE_NS_GRAPHICS;
 
-struct aeGlobals
+struct AE_TREEGEN_DLL aeGlobals
 {
   aeGlobals();
   void Reset(void);
@@ -65,6 +65,6 @@ struct aeGlobals
 };
 
 
-extern aeGlobals g_Globals;
+extern AE_TREEGEN_DLL aeGlobals g_Globals;
 
 #endif

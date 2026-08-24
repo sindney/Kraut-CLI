@@ -87,7 +87,7 @@ struct aeKrautMaterial
   }
 };
 
-class aeTree
+class AE_TREEGEN_DLL aeTree
 {
 public:
   aeTree();
@@ -200,6 +200,6 @@ private:
   Kraut::Mesh m_LodImpostorMesh[aeLod::ENUM_COUNT];
 };
 
-extern aeTree g_Tree;
+extern AE_TREEGEN_DLL aeTree g_Tree;
 
 #endif

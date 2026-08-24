@@ -14,8 +14,7 @@ endif()
 BUILD_CONDITIONAL(BUILDSYSTEM_PLATFORM_WINDOWS)
 
 # Add all the preprocessor definitions that are needed to configure this library
-# add_definitions (-DMY_PREPROCESS_DEFINITION_1)
-# add_definitions (-DMY_PREPROCESS_DEFINITION_2)
+add_definitions (-DAE_RENDERAPI_OPENGL)
 
 # Set this to true, if your application is a real win32 app (not a console app)
 SET (IS_WIN32_APPLICATION true)
@@ -31,6 +30,8 @@ SET (LINK_LIBRARIES
   KrautFoundation
   KrautEditorBasics
   KrautGraphics
+  TreePlugin
+  opengl32
 )
 
 SET (ADDITIONAL_DEPENDENCIES

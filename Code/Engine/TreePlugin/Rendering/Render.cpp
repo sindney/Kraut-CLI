@@ -197,7 +197,9 @@ void aeTreePlugin::Render()
 
   if (s_bStatsNeedUpdate)
   {
-    qtTreeEditWidget::s_pWidget->UpdateStats();
+    // s_pWidget is null in headless mode (aeEditor --screenshot)
+    if (qtTreeEditWidget::s_pWidget != nullptr)
+      qtTreeEditWidget::s_pWidget->UpdateStats();
     s_bStatsNeedUpdate = false;
   }
 }

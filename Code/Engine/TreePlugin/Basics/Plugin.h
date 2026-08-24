@@ -10,7 +10,7 @@ extern "C"
   AE_TREEGEN_DLL void aePlugin_DeInit(void);
 }
 
-class aeTreePlugin
+class AE_TREEGEN_DLL aeTreePlugin
 {
 public:
   aeTreePlugin();
@@ -45,6 +45,6 @@ private:
   void UpdatePickingBuffer(void);
 };
 
-extern aeTreePlugin g_Plugin;
+extern AE_TREEGEN_DLL aeTreePlugin g_Plugin;
 
 #endif

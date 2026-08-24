@@ -87,6 +87,9 @@ AE_ON_GLOBAL_EVENT(aeEditor_SetTaskbarProgress)
   qtMainWindow* pMainWindow = nullptr;
   aeVariableRegistry::RetrieveRaw("system/qt/mainwidget", &pMainWindow, sizeof(QMainWindow*));
 
+  if (pMainWindow == nullptr)
+    return; // headless mode (screenshot): no main window registered
+
   pMainWindow->SetWin7ProgressBarState((aeWin7ProgressBarState::Enum)param0.iInt32, param1.iInt32);
 }
 
