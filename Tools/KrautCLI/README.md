@@ -23,10 +23,25 @@ editor-only engine libraries) is opt-in: configure with `-DKRAUT_BUILD_EDITOR=ON
 
 ```
 KrautCLI info <file.tree> [--json]
+KrautCLI dump <file.tree>
+KrautCLI patch <in.tree> <out.tree> [--seed N] [--copy <FromType> <ToType>] --set <BranchType>.<Field>=<Value> [--set ...] [--json]
 KrautCLI generate <file.tree> [--seed N] [--lod none|0|1|2|3|4] --out <file.obj> [--json]
 KrautCLI export <file.tree> [--seed N] --format obj|kraut --out <path> [--json]
 KrautCLI roundtrip <in.tree> <out.tree> [--json]
 ```
+
+- `dump`: prints every patchable scalar field of every used branch type as
+  `Type.Field = Value` (output is directly reusable as `--set` arguments).
+- `patch`: clones a descriptor with typed overrides. Branch type names accept
+  `Trunk_1..3`, `Main_Branches_1..3`, `Sub_Branches_1..3`, `Twigs_1..3` (underscore optional,
+  case-insensitive); the `m_` field prefix may be omitted. Enum fields accept names
+  (`Straight/Upwards/Degree22..Degree157/Downwards`, `Off/Relative/Absolute`, `Default/Umbrella`,
+  `Upwards/AlongBranch/OrthogonalToBranch`, `Full/Symetric/InverseSymetric`) or integers.
+  Geometry toggles: `EnableBranch`/`EnableFrond`/`EnableLeaf`; sub-type gates: `AllowSubType0..2`;
+  texture strings: `TextureBranch`/`TextureFrond`/`TextureLeaf`.
+  `--copy A B` clones a full branch-type desc (curves + textures included) into another slot —
+  the way to activate an unused type (e.g. Sub_Branches_1) with sane defaults. Copies run before sets.
+  Curves and textures are inherited from the source descriptor; `--seed` reseeds the output file.
 
 - `--seed N`: overrides the descriptor's random seed (default: seed stored in the file).
 - `--lod`: `none`/`full` = full detail; `0`..`4` = LOD levels. Only full-mesh LODs can be

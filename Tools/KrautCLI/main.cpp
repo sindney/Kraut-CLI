@@ -2,12 +2,15 @@
 //
 // Usage:
 //   KrautCLI info <file.tree> [--json]
+//   KrautCLI dump <file.tree>
+//   KrautCLI patch <in.tree> <out.tree> [--seed N] --set <BranchType>.<Field>=<Value> [--set ...] [--json]
 //   KrautCLI generate <file.tree> [--seed N] [--lod none|0|1|2|3|4] --out <file.obj> [--json]
 //   KrautCLI export <file.tree> [--seed N] --format obj|kraut --out <path> [--json]
 //   KrautCLI roundtrip <in.tree> <out.tree> [--json]
 //
 // Exit codes: 0 = success, 1 = usage error, 2 = load failure, 3 = generation failure, 4 = export failure.
 
+#include "DescriptorPatch.h"
 #include "KrautExport.h"
 #include "ObjExport.h"
 #include "Pipeline.h"
@@ -16,6 +19,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <vector>
 
 namespace
 {
@@ -34,6 +39,8 @@ namespace
     bool m_bSeedGiven = false;
     aeUInt32 m_uiLod = 0; // 0 = full detail
     bool m_bJson = false;
+    std::vector<std::string> m_Patches;
+    std::vector<std::pair<std::string, std::string>> m_Copies;
   };
 
   void PrintUsage()
@@ -43,6 +50,8 @@ namespace
       "\n"
       "Usage:\n"
       "  KrautCLI info <file.tree> [--json]\n"
+      "  KrautCLI dump <file.tree>\n"
+      "  KrautCLI patch <in.tree> <out.tree> [--seed N] [--copy <FromType> <ToType>] --set <BranchType>.<Field>=<Value> [--set ...] [--json]\n"
       "  KrautCLI generate <file.tree> [--seed N] [--lod none|0|1|2|3|4] --out <file.obj> [--json]\n"
       "  KrautCLI export <file.tree> [--seed N] --format obj|kraut --out <path> [--json]\n"
       "  KrautCLI roundtrip <in.tree> <out.tree> [--json]\n");
@@ -90,6 +99,14 @@ namespace
       }
       else if (std::strcmp(sz, "--out") == 0 && i + 1 < argc)
         args.m_szOut = argv[++i];
+      else if (std::strcmp(sz, "--set") == 0 && i + 1 < argc)
+        args.m_Patches.emplace_back(argv[++i]);
+      else if (std::strcmp(sz, "--copy") == 0 && i + 2 < argc)
+      {
+        const char* szFrom = argv[++i];
+        const char* szTo = argv[++i];
+        args.m_Copies.emplace_back(szFrom, szTo);
+      }
       else if (std::strcmp(sz, "--format") == 0 && i + 1 < argc)
         args.m_szFormat = argv[++i];
       else if (sz[0] != '-' && iPositional == 0)
@@ -274,6 +291,48 @@ int main(int argc, char** argv)
     return 0;
   }
 
+  if (std::strcmp(args.m_szCommand, "dump") == 0)
+  {
+    DumpDescriptorFields(tf);
+    return 0;
+  }
+
+  if (std::strcmp(args.m_szCommand, "patch") == 0)
+  {
+    if (args.m_szInput2 == nullptr || (args.m_Patches.empty() && args.m_Copies.empty()))
+    {
+      PrintUsage();
+      return 1;
+    }
+
+    if (args.m_bSeedGiven)
+      tf.m_StructureDesc.m_uiRandomSeed = args.m_uiSeed;
+
+    for (const auto& copy : args.m_Copies)
+    {
+      if (!CopyBranchTypeDesc(tf, copy.first.c_str(), copy.second.c_str(), sError))
+        return Fail(1, "copy", sError, args.m_bJson);
+    }
+
+    for (const std::string& sPatch : args.m_Patches)
+    {
+      if (!ApplyDescriptorPatch(tf, sPatch.c_str(), sError))
+      {
+        aeString sFull = aeString(sPatch.c_str()) + ": " + sError;
+        return Fail(1, "patch", sFull, args.m_bJson);
+      }
+    }
+
+    if (!tf.Save(args.m_szInput2, sError))
+      return Fail(4, "save", sError, args.m_bJson);
+
+    if (args.m_bJson)
+      std::printf("{\n  \"saved\": true, \"copies\": %u, \"patches\": %u\n}\n", (unsigned int)args.m_Copies.size(), (unsigned int)args.m_Patches.size());
+    else
+      std::printf("Saved: %s (%u copies, %u patches applied)\n", args.m_szInput2, (unsigned int)args.m_Copies.size(), (unsigned int)args.m_Patches.size());
+    return 0;
+  }
+
   if (std::strcmp(args.m_szCommand, "roundtrip") == 0)
   {
     if (args.m_szInput2 == nullptr)
@@ -370,7 +429,7 @@ int main(int argc, char** argv)
       }
 
       if (args.m_bJson)
-        std::printf("{\n  \"format\": \"obj\",\n  \"seed\": %u\n}\n");
+        std::printf("{\n  \"format\": \"obj\",\n  \"seed\": %u\n}\n", uiSeed);
       return 0;
     }
 
