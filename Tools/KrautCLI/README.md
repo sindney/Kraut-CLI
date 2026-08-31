@@ -48,8 +48,52 @@ KrautCLI roundtrip <in.tree> <out.tree> [--json]
   generated headlessly (impostor modes FourQuads/TwoQuads/Billboard require the editor renderer).
 - `--format obj`: writes one OBJ per full-mesh LOD (`<path>.obj`, `<path>_LOD0.obj`, ...).
 - `--format kraut`: writes the native baked `.kraut` format (v2), self-validated after writing.
+- `--format glb`: writes one binary glTF (see "glb export" below) for engine import
+  (fury3d `add-kraut-vegetation`); the JSON summary lists every referenced texture
+  (URI basename + resolved source path) so callers can copy them next to the glb.
 - `--json`: machine-readable stdout (single JSON document) for agent consumption.
 - Exit codes: 0 ok, 1 usage error, 2 load failure, 3 generation failure, 4 export failure.
+
+## glb export
+
+`KrautCLI export <file.tree> --format glb --out <path>` produces a single glb with:
+
+- one mesh node per full-mesh LOD slot named `<tree>_LOD<n>` (LOD 0 = full detail),
+  primitives grouped by material (bark / frond / leaf);
+- a billboard quad node `<tree>_Billboard`, pre-sized to the tree bounding box
+  (width = XZ diagonal so the silhouette fits from every azimuth, height = bbox height),
+  referencing `<tree>_BillboardAtlas.png` (rendered separately by `KrautPreview --atlas`);
+- `COLOR_0` vertex colors with wind weights: **R** branch sway (0 trunk base .. 1 twig tips),
+  **G** leaf flutter (1 leaf, 0.5 frond, 0 branch), **B** per-branch phase hash,
+  **A** `m_uiColorVariation / 255`;
+- PBR materials: baseColor texture + `MASK` alpha (cutoff 0.4) + `doubleSided` for
+  frond/leaf geometry. `.dds` texture references resolve to `.tga`/`.png` siblings
+  (a `tga/`/`png/` subdirectory or a same-dir extension swap) because downstream
+  STB-based loaders cannot read DDS; unresolved references are reported as warnings;
+- `asset.extras.kraut`: `{ seed, descriptor, reference_fov: 0.7854, lod_thresholds?,
+  billboard: { atlas_cols, atlas_rows: 1, mode: "cylindrical", texture, quad_width,
+  quad_height }, wind: { encoding } }`. `lod_thresholds` are screen-coverage
+  fractions converted from the descriptor's LOD distances via the tree's bounding
+  radius and the reference fov (omitted when every slot distance is 0; the importer
+  synthesizes linear thresholds then).
+
+Determinism: same descriptor + seed -> byte-identical glb.
+
+## Billboard atlas layout (locked)
+
+`KrautPreview <file.tree> --atlas out.png [--atlas-cols N] [--atlas-res R]` bakes the
+billboard atlas: `N` orthographic views in a single row (`atlas_rows = 1`; cylindrical
+facing), cell size `R x R`, transparent background.
+
+- Cell `k` (0-based) shows the tree from azimuth `a_k = ((k + 0.5) / cols - 0.5) * 2*pi`
+  radians around the +Y axis, where azimuth 0 = camera on the tree's **+Z** axis.
+- The fury BILLBOARD shader maps camera azimuth `angle = atan2(fwd.x, fwd.z)` to cell
+  `floor(fract(angle / 2pi + 0.5) * cols)` — the same `a_k`, so cell centers align.
+- The ortho box exactly covers the glb billboard quad: `[-quadW/2, quadW/2] x [0, quadH]`
+  (quad width = XZ bbox diagonal, height = bbox height), so the image maps edge-to-edge
+  onto the quad's UVs.
+- Quad UVs: u 0..1 across the cell, v 1 at the trunk base .. 0 at the top (glTF v-down).
+
 
 ## Data compatibility
 

@@ -89,8 +89,15 @@ target_link_libraries (KrautPreview
   SDL2::SDL2
   SDL2::SDL2main
   libglew_static
-  opengl32
 )
+
+if (WIN32)
+  target_link_libraries (KrautPreview opengl32)
+elseif (APPLE)
+  target_link_libraries (KrautPreview "-framework OpenGL")
+else ()
+  target_link_libraries (KrautPreview GL)
+endif ()
 
 target_compile_definitions (KrautPreview PRIVATE
   GLEW_STATIC

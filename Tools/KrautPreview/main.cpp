@@ -42,11 +42,14 @@ namespace
   {
     const char* m_szInput = nullptr;
     const char* m_szScreenshot = nullptr;
+    const char* m_szAtlas = nullptr;
     aeUInt32 m_uiSeed = 0;
     bool m_bSeedGiven = false;
     int m_iLod = 0;
     int m_iWidth = 1280;
     int m_iHeight = 720;
+    int m_iAtlasCols = 8;
+    int m_iAtlasRes = 256;
     std::vector<std::string> m_DataRoots;
   };
 
@@ -57,9 +60,12 @@ namespace
       "Usage:\n"
       "  KrautPreview <file.tree> [--seed N] [--lod none|0|1|2|3|4] [--data DIR]\n"
       "  KrautPreview <file.tree> [--seed N] [--lod ...] --screenshot out.png [--width W] [--height H]\n"
+      "  KrautPreview <file.tree> [--seed N] [--lod ...] --atlas out.png [--atlas-cols N] [--atlas-res R]\n"
       "\n"
       "  --data DIR  extra data root for texture lookup (repeatable);\n"
-      "              the repo's Data/Content and Data/TreePlugin are probed automatically\n");
+      "              the repo's Data/Content and Data/TreePlugin are probed automatically\n"
+      "  --atlas     bake a cylindrical billboard atlas: N orthographic views in one row,\n"
+      "              cell k from azimuth ((k + 0.5) / cols - 0.5) * 2*pi around +Z\n");
   }
 
   bool ParseArgs(int argc, char** argv, Options& opt)
@@ -87,6 +93,12 @@ namespace
       }
       else if (std::strcmp(sz, "--screenshot") == 0 && i + 1 < argc)
         opt.m_szScreenshot = argv[++i];
+      else if (std::strcmp(sz, "--atlas") == 0 && i + 1 < argc)
+        opt.m_szAtlas = argv[++i];
+      else if (std::strcmp(sz, "--atlas-cols") == 0 && i + 1 < argc)
+        opt.m_iAtlasCols = std::max(1, std::atoi(argv[++i]));
+      else if (std::strcmp(sz, "--atlas-res") == 0 && i + 1 < argc)
+        opt.m_iAtlasRes = std::max(16, std::atoi(argv[++i]));
       else if (std::strcmp(sz, "--width") == 0 && i + 1 < argc)
         opt.m_iWidth = std::atoi(argv[++i]);
       else if (std::strcmp(sz, "--height") == 0 && i + 1 < argc)
@@ -346,6 +358,18 @@ namespace
       return r;
     }
 
+    static Mat4 Ortho(float l, float r, float b, float t, float n, float f)
+    {
+      Mat4 m = Identity();
+      m.m[0] = 2.0f / (r - l);
+      m.m[5] = 2.0f / (t - b);
+      m.m[10] = -2.0f / (f - n);
+      m.m[12] = -(r + l) / (r - l);
+      m.m[13] = -(t + b) / (t - b);
+      m.m[14] = -(f + n) / (f - n);
+      return m;
+    }
+
     static Mat4 Mul(const Mat4& a, const Mat4& b)
     {
       Mat4 r = {};
@@ -530,10 +554,12 @@ namespace
     app.m_bGpuDirty = false;
   }
 
-  void DrawScene(AppState& app, GLuint program, int iWidth, int iHeight)
+  void DrawScene(AppState& app, GLuint program, int iWidth, int iHeight,
+    const Mat4& proj, const Mat4& view, const float clearColor[4],
+    const float fwd[3], const float right[3], const float up[3])
   {
     glViewport(0, 0, iWidth, iHeight);
-    glClearColor(0.65f, 0.72f, 0.80f, 1.0f); // light blue-grey, close to the editor's background
+    glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE); // fronds/leaves are double-sided
@@ -545,13 +571,8 @@ namespace
 
     glUseProgram(program);
 
-    const Mat4 proj = Mat4::Perspective(50.0f * 3.14159265f / 180.0f, (float)iWidth / (float)iHeight, 0.05f, 500.0f);
-    const Mat4 view = app.m_Camera.View();
     const Mat4 model = Mat4::Identity();
     const Mat4 mvp = Mat4::Mul(proj, Mat4::Mul(view, model));
-
-    float fwd[3], right[3], up[3];
-    app.m_Camera.Basis(fwd, right, up);
 
     glUniformMatrix4fv(glGetUniformLocation(program, "uMVP"), 1, GL_FALSE, mvp.m);
     glUniform3f(glGetUniformLocation(program, "uLightDir"), 0.5f, 0.8f, 0.3f);
@@ -613,7 +634,12 @@ namespace
       return 4;
     }
 
-    DrawScene(app, program, W, H);
+    const Mat4 proj = Mat4::Perspective(50.0f * 3.14159265f / 180.0f, (float)W / (float)H, 0.05f, 500.0f);
+    const Mat4 view = app.m_Camera.View();
+    const float clearColor[4] = {0.65f, 0.72f, 0.80f, 1.0f};
+    float fwd[3], right[3], up[3];
+    app.m_Camera.Basis(fwd, right, up);
+    DrawScene(app, program, W, H, proj, view, clearColor, fwd, right, up);
     glFinish();
 
     std::vector<unsigned char> pixels((size_t)W * H * 4);
@@ -642,6 +668,91 @@ namespace
     if (slash == std::string::npos)
       return ".";
     return sPath.substr(0, slash);
+  }
+
+  // Billboard atlas bake: `cols` orthographic views in one row, cell k from
+  // azimuth ((k + 0.5) / cols - 0.5) * 2*pi around the tree's +Z axis
+  // (contract with the fury BILLBOARD shader, see add-glb-export design D5).
+  // The ortho box exactly covers the glb's pre-sized billboard quad:
+  // width = XZ bbox diagonal (silhouette fits from every azimuth),
+  // height = bbox height. Background is transparent.
+  int RunAtlas(AppState& app, const Options& opt, SDL_Window* pWindow, GLuint program)
+  {
+    const int cols = opt.m_iAtlasCols;
+    const int res = opt.m_iAtlasRes;
+
+    const auto& bb = app.m_Tree.m_BBox;
+    const float cx = (bb.m_vMin.x + bb.m_vMax.x) * 0.5f;
+    const float cz = (bb.m_vMin.z + bb.m_vMax.z) * 0.5f;
+    const float sx = bb.m_vMax.x - bb.m_vMin.x;
+    const float sy = bb.m_vMax.y - bb.m_vMin.y;
+    const float sz = bb.m_vMax.z - bb.m_vMin.z;
+    const float quadW = std::sqrt(sx * sx + sz * sz);
+    const float quadH = sy;
+    const float diag = std::sqrt(sx * sx + sy * sy + sz * sz);
+
+    GLuint fbo = 0, colorTex = 0, depthRb = 0;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glGenTextures(1, &colorTex);
+    glBindTexture(GL_TEXTURE_2D, colorTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, res, res, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTex, 0);
+    glGenRenderbuffers(1, &depthRb);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, res, res);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRb);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+      std::fprintf(stderr, "Framebuffer incomplete.\n");
+      return 4;
+    }
+
+    std::vector<unsigned char> atlas((size_t)cols * res * res * 4, 0);
+    std::vector<unsigned char> pixels((size_t)res * res * 4);
+    const float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    for (int k = 0; k < cols; ++k)
+    {
+      const float az = ((k + 0.5f) / (float)cols - 0.5f) * 6.2831853f;
+      const float dist = diag * 2.0f + 1.0f;
+      const float eye[3] = {cx + std::sin(az) * dist, quadH * 0.5f, cz + std::cos(az) * dist};
+      const Mat4 view = Mat4::LookAt(eye[0], eye[1], eye[2], cx, quadH * 0.5f, cz);
+      const Mat4 proj = Mat4::Ortho(-quadW * 0.5f, quadW * 0.5f, -quadH * 0.5f, quadH * 0.5f,
+        dist - diag, dist + diag);
+
+      // camera basis for the billboard-leaf vertex shader
+      float f[3] = {cx - eye[0], 0.0f, cz - eye[2]};
+      const float fl = std::sqrt(f[0] * f[0] + f[2] * f[2]);
+      f[0] /= fl; f[2] /= fl;
+      float r[3] = {-f[2], 0.0f, f[0]};
+      const float u[3] = {0.0f, 1.0f, 0.0f};
+
+      DrawScene(app, program, res, res, proj, view, clearColor, f, r, u);
+      glFinish();
+      glReadPixels(0, 0, res, res, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+      for (int y = 0; y < res; ++y)
+        std::memcpy(&atlas[((size_t)y * (size_t)cols * res + (size_t)k * res) * 4],
+          &pixels[(size_t)y * res * 4], (size_t)res * 4);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &fbo);
+    glDeleteTextures(1, &colorTex);
+    glDeleteRenderbuffers(1, &depthRb);
+
+    stbi_flip_vertically_on_write(1);
+    if (!stbi_write_png(opt.m_szAtlas, cols * res, res, 4, atlas.data(), cols * res * 4))
+    {
+      std::fprintf(stderr, "Failed to write PNG: %s\n", opt.m_szAtlas);
+      return 4;
+    }
+
+    std::printf("{\n  \"atlas\": \"%s\",\n  \"cols\": %d,\n  \"rows\": 1,\n  \"cellResolution\": %d,\n  \"width\": %d,\n  \"height\": %d\n}\n",
+      opt.m_szAtlas, cols, res, cols * res, res);
+    return 0;
   }
 
   void BuildTextureRoots(AppState& app, const Options& opt, const char* szExeDir)
@@ -703,13 +814,15 @@ int main(int argc, char** argv)
     return 3;
 
   const bool bScreenshot = (opt.m_szScreenshot != nullptr);
+  const bool bAtlas = (opt.m_szAtlas != nullptr);
+  const bool bOffscreen = bScreenshot || bAtlas;
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-  const aeUInt32 uiWindowFlags = SDL_WINDOW_OPENGL | (bScreenshot ? SDL_WINDOW_HIDDEN : (SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED));
+  const aeUInt32 uiWindowFlags = SDL_WINDOW_OPENGL | (bOffscreen ? SDL_WINDOW_HIDDEN : (SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED));
 
   SDL_Window* pWindow = SDL_CreateWindow("KrautPreview", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, opt.m_iWidth, opt.m_iHeight, uiWindowFlags);
   if (!pWindow)
@@ -725,7 +838,7 @@ int main(int argc, char** argv)
     return 4;
   }
   SDL_GL_MakeCurrent(pWindow, glContext);
-  SDL_GL_SetSwapInterval(bScreenshot ? 0 : 1);
+  SDL_GL_SetSwapInterval(bOffscreen ? 0 : 1);
 
   glewExperimental = GL_TRUE; // required for core profile contexts
   glewInit(); // may return an error on core profiles after successful init; harmless
@@ -737,6 +850,16 @@ int main(int argc, char** argv)
   {
     EnsureGpuData(app);
     const int iResult = RunScreenshot(app, opt, pWindow, program);
+    SDL_GL_DeleteContext(glContext);
+    SDL_DestroyWindow(pWindow);
+    SDL_Quit();
+    return iResult;
+  }
+
+  if (bAtlas)
+  {
+    EnsureGpuData(app);
+    const int iResult = RunAtlas(app, opt, pWindow, program);
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(pWindow);
     SDL_Quit();
@@ -812,7 +935,14 @@ int main(int argc, char** argv)
     SDL_GetWindowSize(pWindow, &iWidth, &iHeight);
 
     ImGui::Render();
-    DrawScene(app, program, iWidth, iHeight);
+    {
+      const Mat4 proj = Mat4::Perspective(50.0f * 3.14159265f / 180.0f, (float)iWidth / (float)iHeight, 0.05f, 500.0f);
+      const Mat4 view = app.m_Camera.View();
+      const float clearColor[4] = {0.65f, 0.72f, 0.80f, 1.0f};
+      float fwd[3], right[3], up[3];
+      app.m_Camera.Basis(fwd, right, up);
+      DrawScene(app, program, iWidth, iHeight, proj, view, clearColor, fwd, right, up);
+    }
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(pWindow);

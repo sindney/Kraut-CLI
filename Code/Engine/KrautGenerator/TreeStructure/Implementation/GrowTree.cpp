@@ -90,7 +90,8 @@ namespace Kraut
           m_RNG.m_uiSeedValue = NodeRD.m_NodePlacementRD.GetRandomNumber();
           const float fDistance = fMinDistanceToStartPos + m_RNG.Rand((aeInt32)(spawnDesc.m_fNodeHeight / 0.05f) + 1) * 0.05f;
 
-          Kraut::BranchStats dTrunk = CreateBranchDesc(spawnDesc, NodeRD.GetBranchRD());
+          Kraut::BranchRandomData BranchRD = NodeRD.GetBranchRD();
+          Kraut::BranchStats dTrunk = CreateBranchDesc(spawnDesc, BranchRD);
 
           dTrunk.m_vStartPosition = qMainDir * aeVec3(fDistance, 0, 0);
 
@@ -366,13 +367,17 @@ namespace Kraut
     aeInt32 uiNode = branchStructure.m_Nodes.size() - 1;
     float fAccumDist = 0.01f;
 
+    // declared up here: the goto below may not jump over an
+    // initialization (ill-formed in ISO C++, MSVC accepts it)
+    aeInt32 uiLastNode = 0;
+
     // skip all nodes that are in the branchless part
     {
       if (!SkipNodes_Reverse(uiNode, fAccumDist, branchStructure, ParentDesc.m_fBranchlessPartEndABS - fAccumDist, fBranchlessPart))
         goto end;
     }
 
-    aeInt32 uiLastNode = uiNode + 1;
+    uiLastNode = uiNode + 1;
     while (uiNode > 0)
     {
       // don't want to end up in an endless loop

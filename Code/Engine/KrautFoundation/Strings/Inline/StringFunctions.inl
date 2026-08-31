@@ -1,8 +1,18 @@
 #ifndef AE_FOUNDATION_STRINGS_STRINGFUNCTIONS_INL
 #define AE_FOUNDATION_STRINGS_STRINGFUNCTIONS_INL
 
-#include "../Defines.h"
-#include "../Math/Math.h"
+#ifdef _MSC_VER
+#  define AE_STRICMP _stricmp
+#  define AE_STRNICMP _strnicmp
+#else
+#  include <strings.h>
+#  define AE_STRICMP strcasecmp
+#  define AE_STRNICMP strncasecmp
+#endif
+
+
+#include "KrautFoundation/Defines.h"
+#include "KrautFoundation/Math/Math.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -56,14 +66,14 @@ namespace AE_NS_FOUNDATION
   {
     AE_STRINGCOMPARE_HANDLE_NULL_PTRS (szString1, szString2, true, false);
 
-    return (_stricmp (szString1, szString2) == 0);
+    return (AE_STRICMP (szString1, szString2) == 0);
   }
 
   inline bool aeStringFunctions::CompareEqual_NoCase (const char* szString1, const char* szString2, aeUInt32 uiCharsToCompare)
   {
     AE_STRINGCOMPARE_HANDLE_NULL_PTRS (szString1, szString2, true, false);
 
-    return (_strnicmp (szString1, szString2, uiCharsToCompare) == 0);
+    return (AE_STRNICMP (szString1, szString2, uiCharsToCompare) == 0);
   }
 
 
@@ -85,14 +95,14 @@ namespace AE_NS_FOUNDATION
   {
     AE_STRINGCOMPARE_HANDLE_NULL_PTRS (szString1, szString2, 0, 1);
 
-    return (_stricmp (szString1, szString2));
+    return (AE_STRICMP (szString1, szString2));
   }
 
   inline aeInt32 aeStringFunctions::CompareAlphabetically_NoCase (const char* szString1, const char* szString2, aeUInt32 uiCharsToCompare)
   {
     AE_STRINGCOMPARE_HANDLE_NULL_PTRS (szString1, szString2, 0, 1);
 
-    return (_strnicmp (szString1, szString2, uiCharsToCompare));
+    return (AE_STRNICMP (szString1, szString2, uiCharsToCompare));
   }
 
 

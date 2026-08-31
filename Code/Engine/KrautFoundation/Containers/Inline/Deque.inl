@@ -1,9 +1,9 @@
 #ifndef AE_FOUNDATION_CONTAINERS_DEQUE_INL
 #define AE_FOUNDATION_CONTAINERS_DEQUE_INL
 
-#include "../../Math/Math.h"
-#include "../../Memory/MemoryManagement.h"
-#include "../../Basics/Checks.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Memory/MemoryManagement.h"
+#include "KrautFoundation/Basics/Checks.h"
 
 namespace AE_NS_FOUNDATION
 {

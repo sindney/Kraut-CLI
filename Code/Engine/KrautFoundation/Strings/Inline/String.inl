@@ -1,10 +1,10 @@
 #ifndef AE_FOUNDATION_STRINGS_STRING_INL
 #define AE_FOUNDATION_STRINGS_STRING_INL
 
-#include "../Math/Math.h"
-#include "../Memory/Memory.h"
-#include "../Memory/MemoryManagement.h"
-#include "../Strings/StringFunctions.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Memory/Memory.h"
+#include "KrautFoundation/Memory/MemoryManagement.h"
+#include "KrautFoundation/Strings/StringFunctions.h"
 
 namespace AE_NS_FOUNDATION
 {

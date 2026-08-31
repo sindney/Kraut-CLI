@@ -1,8 +1,8 @@
 #ifndef AE_FOUNDATION_STREAMS_STREAMS_H
 #define AE_FOUNDATION_STREAMS_STREAMS_H
 
-#include "../Defines.h"
-#include "../Strings/String.h"
+#include "KrautFoundation/Defines.h"
+#include "KrautFoundation/Strings/String.h"
 
 namespace AE_NS_FOUNDATION
 {
@@ -94,6 +94,6 @@ namespace AE_NS_FOUNDATION
   };
 } // namespace AE_NS_FOUNDATION
 
-#include "../Streams/StreamOperators.h"
+#include "KrautFoundation/Streams/StreamOperators.h"
 
 #endif

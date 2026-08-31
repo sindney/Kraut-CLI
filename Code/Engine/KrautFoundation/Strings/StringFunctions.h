@@ -1,7 +1,7 @@
 #ifndef AE_FOUNDATION_STRINGS_STRINGFUNCTIONS_H
 #define AE_FOUNDATION_STRINGS_STRINGFUNCTIONS_H
 
-#include "../Basics/Checks.h"
+#include "KrautFoundation/Basics/Checks.h"
 #include "Declarations.h"
 #include <stdarg.h>
 

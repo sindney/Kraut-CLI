@@ -1,31 +1,31 @@
 #ifndef AE_FOUNDATION_MATH_MATH_INL
 #define AE_FOUNDATION_MATH_MATH_INL
 
-#include "../Math/Math.h"
+#include "KrautFoundation/Math/Math.h"
 
-#include <math.h>
+#include <cmath>
 #include <cstdlib>
 
 namespace AE_NS_FOUNDATION
 {
   inline float aeMath::SinDeg (float f)
   {
-    return (sinf (f * aeMath_DegToRad));
+    return (sin (f * aeMath_DegToRad));
   }
 
   inline float aeMath::CosDeg (float f)
   {
-    return (cosf (f * aeMath_DegToRad));
+    return (cos (f * aeMath_DegToRad));
   }
 
   inline float aeMath::SinRad (float f)
   {
-    return (sinf (f));
+    return (sin (f));
   }
 
   inline float aeMath::CosRad (float f)
   {
-    return (cosf (f));
+    return (cos (f));
   }
 
   inline float aeMath::TanDeg (float f)
@@ -40,22 +40,22 @@ namespace AE_NS_FOUNDATION
 
   inline float aeMath::ASinDeg (float f)
   {
-    return (asinf (f) * aeMath_RadToDeg);
+    return (asin (f) * aeMath_RadToDeg);
   }
 
   inline float aeMath::ACosDeg  (float f)
   {
-    return (acosf (f) * aeMath_RadToDeg);
+    return (acos (f) * aeMath_RadToDeg);
   }
 
   inline float aeMath::ASinRad (float f)
   {
-    return (asinf (f));
+    return (asin (f));
   }
 
   inline float aeMath::ACosRad (float f)
   {
-    return (acosf (f));
+    return (acos (f));
   }
 
   inline float aeMath::ATanDeg (float f)

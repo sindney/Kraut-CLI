@@ -1,9 +1,9 @@
 #ifndef AE_FOUNDATION_CONTAINERS_MAP_INL
 #define AE_FOUNDATION_CONTAINERS_MAP_INL
 
-#include "../../Math/Math.h"
-#include "../../Basics/Checks.h"
-#include "../../Memory/Memory.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Basics/Checks.h"
+#include "KrautFoundation/Memory/Memory.h"
 
 namespace AE_NS_FOUNDATION
 {

@@ -1,11 +1,11 @@
 #ifndef AE_FOUNDATION_MEMORY_MEMORYMANAGEMENT_INL
 #  define AE_FOUNDATION_MEMORY_MEMORYMANAGEMENT_INL
 
-#  include "../Basics/Checks.h"
-#  include "../Defines.h"
-#  include "../Math/Math.h"
-#  include "../Memory/Memory.h"
-#  include "../Memory/MemoryManagement.h"
+#include "KrautFoundation/Basics/Checks.h"
+#include "KrautFoundation/Defines.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Memory/Memory.h"
+#include "KrautFoundation/Memory/MemoryManagement.h"
 
 // Make sure new/delete are not already defined, otherwise the placement new functions might break
 #  ifdef new

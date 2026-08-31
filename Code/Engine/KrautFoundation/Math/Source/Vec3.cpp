@@ -1,7 +1,7 @@
-#include "../Vec3.h"
-#include "../../Basics/Checks.h"
-#include "../Math.h"
-#include "../Quaternion.h"
+#include "KrautFoundation/Math/Vec3.h"
+#include "KrautFoundation/Basics/Checks.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Math/Quaternion.h"
 
 namespace AE_NS_FOUNDATION
 {

@@ -1,8 +1,8 @@
 #ifndef AE_FOUNDATION_MEMORY_MEMORYMANAGEMENT_H
 #define AE_FOUNDATION_MEMORY_MEMORYMANAGEMENT_H
 
-#include "../Defines.h"
-#include "../Math/Math.h"
+#include "KrautFoundation/Defines.h"
+#include "KrautFoundation/Math/Math.h"
 #include <memory>
 
 namespace AE_NS_FOUNDATION

@@ -1,4 +1,4 @@
-#include "../Streams.h"
+#include "KrautFoundation/Streams/Streams.h"
 
 namespace AE_NS_FOUNDATION
 {

@@ -1,13 +1,13 @@
 #ifndef AE_FOUNDATION_FILESYSTEM_STREAMOPERATORS_H
 #define AE_FOUNDATION_FILESYSTEM_STREAMOPERATORS_H
 
-#include "../Defines.h"
-#include "../Math/Matrix.h"
-#include "../Math/Plane.h"
-#include "../Math/Quaternion.h"
-#include "../Math/Vec3.h"
-#include "../Streams/Streams.h"
-#include "../Strings/String.h"
+#include "KrautFoundation/Defines.h"
+#include "KrautFoundation/Math/Matrix.h"
+#include "KrautFoundation/Math/Plane.h"
+#include "KrautFoundation/Math/Quaternion.h"
+#include "KrautFoundation/Math/Vec3.h"
+#include "KrautFoundation/Streams/Streams.h"
+#include "KrautFoundation/Strings/String.h"
 
 namespace AE_NS_FOUNDATION
 {

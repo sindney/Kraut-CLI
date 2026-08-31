@@ -1,5 +1,5 @@
-#include "../Vec3.h"
-#include "../Plane.h"
+#include "KrautFoundation/Math/Vec3.h"
+#include "KrautFoundation/Math/Plane.h"
 
 
 

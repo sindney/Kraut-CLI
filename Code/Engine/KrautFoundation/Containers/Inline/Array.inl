@@ -1,10 +1,10 @@
 #ifndef AE_FOUNDATION_CONTAINERS_ARRAY_INL
 #define AE_FOUNDATION_CONTAINERS_ARRAY_INL
 
-#include "../../Memory/MemoryManagement.h"
-#include "../../Math/Math.h"
-#include "../../Memory/Memory.h"
-#include "../../Basics/Checks.h"
+#include "KrautFoundation/Memory/MemoryManagement.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Memory/Memory.h"
+#include "KrautFoundation/Basics/Checks.h"
 
 namespace AE_NS_FOUNDATION
 {

@@ -1,7 +1,7 @@
 #ifndef AE_FOUNDATION_CONTAINERS_STACK_INL
 #define AE_FOUNDATION_CONTAINERS_STACK_INL
 
-#include "../../Basics/Checks.h"
+#include "KrautFoundation/Basics/Checks.h"
 
 namespace AE_NS_FOUNDATION
 {

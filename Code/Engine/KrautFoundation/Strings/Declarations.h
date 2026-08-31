@@ -1,7 +1,7 @@
 #ifndef AE_FOUNDATION_STRINGS_DECLARATIONS_H
 #define AE_FOUNDATION_STRINGS_DECLARATIONS_H
 
-#include "../Defines.h"
+#include "KrautFoundation/Defines.h"
 
 namespace AE_NS_FOUNDATION
 {

@@ -2,7 +2,7 @@
 #define AE_FOUNDATION_MATH_MATH_H
 
 #include "Declarations.h"
-#include "../Basics/Checks.h"
+#include "KrautFoundation/Basics/Checks.h"
 
 namespace AE_NS_FOUNDATION
 {

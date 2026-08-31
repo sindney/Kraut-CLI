@@ -1,7 +1,7 @@
 #ifndef AE_FOUNDATION_BASICS_CHECKS_H
 #define AE_FOUNDATION_BASICS_CHECKS_H
 
-#include "../Defines.h"
+#include "KrautFoundation/Defines.h"
 
 #include <cassert>
 

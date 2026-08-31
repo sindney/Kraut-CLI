@@ -1,6 +1,6 @@
-#include "../StringFunctions.h"
-#include "../../Math/Math.h"
-#include "../../Memory/Memory.h"
+#include "KrautFoundation/Strings/StringFunctions.h"
+#include "KrautFoundation/Math/Math.h"
+#include "KrautFoundation/Memory/Memory.h"
 
 
 

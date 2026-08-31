@@ -1,6 +1,6 @@
-#include "../Matrix.h"
-#include "../Quaternion.h"
-#include "../../Basics/Checks.h"
+#include "KrautFoundation/Math/Matrix.h"
+#include "KrautFoundation/Math/Quaternion.h"
+#include "KrautFoundation/Basics/Checks.h"
 
 
 

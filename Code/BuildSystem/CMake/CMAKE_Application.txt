@@ -116,7 +116,9 @@ file(RELATIVE_PATH RELATIVE_PARENT_FOLDER ${CMAKE_SOURCE_DIR} ${PARENT_FOLDER})
 SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${RELATIVE_PARENT_FOLDER})
 
 
-if (BUILDSYSTEM_PLATFORM_OSX OR BUILDSYSTEM_PLATFORM_LINUX)
+if (BUILDSYSTEM_PLATFORM_LINUX)
+  # X11 is only actually used by legacy Linux code paths; macOS (and
+  # the headless tools) don't reference it.
   find_package(X11 REQUIRED)
   include_directories (${X11_X11_INCLUDE_PATH})
   target_link_libraries (${PROJECT_NAME} ${X11_X11_LIB})

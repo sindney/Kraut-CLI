@@ -1,4 +1,4 @@
-#include "../StringFunctions.h"
+#include "KrautFoundation/Strings/StringFunctions.h"
 #include <stdarg.h>
 
 

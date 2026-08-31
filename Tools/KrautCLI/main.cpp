@@ -5,12 +5,13 @@
 //   KrautCLI dump <file.tree>
 //   KrautCLI patch <in.tree> <out.tree> [--seed N] --set <BranchType>.<Field>=<Value> [--set ...] [--json]
 //   KrautCLI generate <file.tree> [--seed N] [--lod none|0|1|2|3|4] --out <file.obj> [--json]
-//   KrautCLI export <file.tree> [--seed N] --format obj|kraut --out <path> [--json]
+//   KrautCLI export <file.tree> [--seed N] --format obj|kraut|glb --out <path> [--json]
 //   KrautCLI roundtrip <in.tree> <out.tree> [--json]
 //
 // Exit codes: 0 = success, 1 = usage error, 2 = load failure, 3 = generation failure, 4 = export failure.
 
 #include "DescriptorPatch.h"
+#include "GlbExport.h"
 #include "KrautExport.h"
 #include "ObjExport.h"
 #include "Pipeline.h"
@@ -53,7 +54,7 @@ namespace
       "  KrautCLI dump <file.tree>\n"
       "  KrautCLI patch <in.tree> <out.tree> [--seed N] [--copy <FromType> <ToType>] --set <BranchType>.<Field>=<Value> [--set ...] [--json]\n"
       "  KrautCLI generate <file.tree> [--seed N] [--lod none|0|1|2|3|4] --out <file.obj> [--json]\n"
-      "  KrautCLI export <file.tree> [--seed N] --format obj|kraut --out <path> [--json]\n"
+      "  KrautCLI export <file.tree> [--seed N] --format obj|kraut|glb --out <path> [--json]\n"
       "  KrautCLI roundtrip <in.tree> <out.tree> [--json]\n");
   }
 
@@ -455,7 +456,59 @@ int main(int argc, char** argv)
       return 0;
     }
 
-    std::fprintf(stderr, "Unknown format: %s (valid: obj, kraut)\n", args.m_szFormat);
+    if (std::strcmp(args.m_szFormat, "glb") == 0)
+    {
+      GlbExportOptions opts;
+      opts.m_uiSeed = uiSeed;
+
+      // tree name = descriptor stem; descriptor dir for texture resolution
+      {
+        std::string sInput = args.m_szInput;
+        const size_t slash = sInput.find_last_of("/\\");
+        const std::string sFile = slash == std::string::npos ? sInput : sInput.substr(slash + 1);
+        opts.m_DescriptorDir = slash == std::string::npos ? "." : sInput.substr(0, slash);
+        opts.m_DescriptorFile = sFile;
+        std::string sStem = sFile;
+        const size_t dot = sStem.find_last_of('.');
+        if (dot != std::string::npos)
+          sStem = sStem.substr(0, dot);
+        opts.m_TreeName = sStem;
+      }
+
+      GlbExportResult result;
+      if (!ExportGlb(tf, opts, args.m_szOut, result, sError))
+        return Fail(4, "export", sError, args.m_bJson);
+
+      for (const std::string& sWarn : result.m_Warnings)
+        std::fprintf(stderr, "Warning: %s\n", sWarn.c_str());
+
+      if (args.m_bJson)
+      {
+        std::printf("{\n  \"out\": \"");
+        JsonEscapeAndPrint(args.m_szOut);
+        std::printf("\",\n  \"format\": \"glb\",\n  \"seed\": %u,\n  \"lods\": %u,\n  \"triangles\": %u,\n  \"billboardAtlas\": \"",
+          uiSeed, result.m_uiLodCount, result.m_uiTriangles);
+        JsonEscapeAndPrint((opts.m_TreeName + "_BillboardAtlas.png").c_str());
+        std::printf("\",\n  \"textures\": [");
+        for (size_t i = 0; i < result.m_Textures.size(); ++i)
+        {
+          std::printf("%s\n    {\"uri\": \"", i ? "," : "");
+          JsonEscapeAndPrint(result.m_Textures[i].m_Uri.c_str());
+          std::printf("\", \"source\": \"");
+          JsonEscapeAndPrint(result.m_Textures[i].m_ResolvedPath.c_str());
+          std::printf("\"}");
+        }
+        std::printf("\n  ]\n}\n");
+      }
+      else
+      {
+        std::printf("Wrote: %s (%u mesh LODs + billboard, %u triangles, %u textures)\n",
+          args.m_szOut, result.m_uiLodCount, result.m_uiTriangles, (unsigned int)result.m_Textures.size());
+      }
+      return 0;
+    }
+
+    std::fprintf(stderr, "Unknown format: %s (valid: obj, kraut, glb)\n", args.m_szFormat);
     return 1;
   }
 
