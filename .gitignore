@@ -40,3 +40,6 @@ Data/aeEditor/Layout.qt
 
 # CLI build dirs
 build-*/
+
+# Bare build dir (cmake -S . -B build)
+build/

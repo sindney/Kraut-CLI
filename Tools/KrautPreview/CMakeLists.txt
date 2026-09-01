@@ -13,9 +13,10 @@ endif ()
 
 include (FetchContent)
 
-# SDL2 (built from source, shared lib)
-set (SDL_SHARED ON CACHE BOOL "" FORCE)
-set (SDL_STATIC OFF CACHE BOOL "" FORCE)
+# SDL2 (built from source; static so the tool binaries are self-contained
+# when vendored into engine builds)
+set (SDL_SHARED OFF CACHE BOOL "" FORCE)
+set (SDL_STATIC ON CACHE BOOL "" FORCE)
 set (SDL_TEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare (
   SDL2
@@ -104,9 +105,5 @@ target_compile_definitions (KrautPreview PRIVATE
   IMGUI_IMPL_OPENGL_LOADER_GLEW
 )
 
-# copy SDL2.dll next to the exe
-add_custom_command (TARGET KrautPreview POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<TARGET_FILE:SDL2::SDL2>
-    $<TARGET_FILE_DIR:KrautPreview>
-)
+# (static SDL2: no runtime library to copy next to the exe)
+
