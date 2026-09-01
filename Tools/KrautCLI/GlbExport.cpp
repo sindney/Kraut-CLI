@@ -594,12 +594,13 @@ namespace KrautCLI
     for (size_t i = 0; i < meshNames.size(); ++i)
       jNodes << (i ? "," : "") << "{\"name\":\"" << meshNames[i] << "\",\"mesh\":" << i << "}";
 
-    // materials
+    // materials (named <tree>_<geom>_<n> so materials from different trees
+    // don't collide in a shared scene's name-indexed entity manager)
     const char* const geomNames[3] = {"bark", "frond", "leaf"};
     for (size_t i = 0; i < materials.size(); ++i)
     {
       const GlbMaterial& mat = materials[i];
-      jMaterials << (i ? "," : "") << "{\"name\":\"" << geomNames[mat.m_uiGeomType] << "_" << i
+      jMaterials << (i ? "," : "") << "{\"name\":\"" << opts.m_TreeName << "_" << geomNames[mat.m_uiGeomType] << "_" << i
                  << "\",\"pbrMetallicRoughness\":{\"baseColorFactor\":[1,1,1,1],\"metallicFactor\":0,\"roughnessFactor\":0.9";
       if (materialTexture[i] >= 0)
         jMaterials << ",\"baseColorTexture\":{\"index\":" << materialTexture[i] << "}";
@@ -609,7 +610,7 @@ namespace KrautCLI
       jMaterials << "}";
     }
     // billboard material (atlas texture, alpha cut, two-sided)
-    jMaterials << (materials.empty() ? "" : ",") << "{\"name\":\"billboard\",\"pbrMetallicRoughness\":{\"baseColorFactor\":[1,1,1,1],\"metallicFactor\":0,\"roughnessFactor\":0.9";
+    jMaterials << (materials.empty() ? "" : ",") << "{\"name\":\"" << opts.m_TreeName << "_billboard\",\"pbrMetallicRoughness\":{\"baseColorFactor\":[1,1,1,1],\"metallicFactor\":0,\"roughnessFactor\":0.9";
     jMaterials << ",\"baseColorTexture\":{\"index\":" << imageUris.size() << "}";
     jMaterials << "},\"alphaMode\":\"MASK\",\"alphaCutoff\":0.4,\"doubleSided\":true}";
 
