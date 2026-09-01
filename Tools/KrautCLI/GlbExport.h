@@ -35,6 +35,7 @@ namespace KrautCLI
     std::string m_TreeName;       // descriptor stem, used for node names
     std::string m_DescriptorFile; // descriptor basename (provenance)
     std::string m_DescriptorDir;  // descriptor directory (texture resolution)
+    std::vector<std::string> m_DataRoots; // extra texture roots (--data, repeatable)
   };
 
   // Exports all full-mesh LODs + billboard to one glb at szPath.

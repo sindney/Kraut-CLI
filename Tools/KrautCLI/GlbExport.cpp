@@ -152,16 +152,16 @@ namespace KrautCLI
     // existing file. DDS references resolve to .tga/.png siblings (fury's
     // STB loader cannot read DDS). Returns the resolved path; out_Uri gets
     // the basename the glb should reference.
-    std::string ResolveTexture(const std::string& sRef, const std::string& sDescriptorDir,
+    std::string ResolveTexture(const std::string& sRef, const GlbExportOptions& opts,
       std::string& out_Uri, std::vector<std::string>& out_Warnings)
     {
-      // candidate roots: descriptor dir, its parent (Data/Content for repo
-      // descriptors), cwd, cwd/Data/Content
-      std::vector<std::string> roots;
-      if (!sDescriptorDir.empty())
+      // candidate roots: --data roots first, then descriptor dir, its
+      // parent (Data/Content for repo descriptors), cwd, cwd/Data/Content
+      std::vector<std::string> roots = opts.m_DataRoots;
+      if (!opts.m_DescriptorDir.empty())
       {
-        roots.push_back(sDescriptorDir);
-        roots.push_back(DirName(sDescriptorDir));
+        roots.push_back(opts.m_DescriptorDir);
+        roots.push_back(DirName(opts.m_DescriptorDir));
       }
       roots.push_back(".");
       roots.push_back("Data/Content");
@@ -429,7 +429,7 @@ namespace KrautCLI
       }
 
       std::string sUri, sResolved;
-      sResolved = ResolveTexture(mat.m_sDiffuseTexture, opts.m_DescriptorDir, sUri, out_Result.m_Warnings);
+      sResolved = ResolveTexture(mat.m_sDiffuseTexture, opts, sUri, out_Result.m_Warnings);
 
       auto it = uriToImage.find(sUri);
       if (it == uriToImage.end())

@@ -42,6 +42,7 @@ namespace
     bool m_bJson = false;
     std::vector<std::string> m_Patches;
     std::vector<std::pair<std::string, std::string>> m_Copies;
+    std::vector<std::string> m_DataRoots; // --data texture roots (export glb)
   };
 
   void PrintUsage()
@@ -110,6 +111,8 @@ namespace
       }
       else if (std::strcmp(sz, "--format") == 0 && i + 1 < argc)
         args.m_szFormat = argv[++i];
+      else if (std::strcmp(sz, "--data") == 0 && i + 1 < argc)
+        args.m_DataRoots.emplace_back(argv[++i]);
       else if (sz[0] != '-' && iPositional == 0)
       {
         args.m_szInput = sz;
@@ -460,6 +463,7 @@ int main(int argc, char** argv)
     {
       GlbExportOptions opts;
       opts.m_uiSeed = uiSeed;
+      opts.m_DataRoots = args.m_DataRoots;
 
       // tree name = descriptor stem; descriptor dir for texture resolution
       {
